@@ -33,7 +33,7 @@ defmodule StreamingDelta.MixProject do
   defp deps do
     [
       {:delta, "~> 0.4.1"},
-      {:ecto_ulid, "~> 0.3.0", only: :test}
+      {:ex_doc, ">= 0.0.0", only: :dev, runtime: false}
     ]
   end
 
