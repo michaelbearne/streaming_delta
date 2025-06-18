@@ -2,7 +2,7 @@ defmodule StreamingDelta.MixProject do
   use Mix.Project
 
   @version "0.1.0"
-  @source_url "https://github.com/dualohq/streaming_delta"
+  @source_url "https://github.com/michaelbearne/streaming_delta"
 
   def project do
     [
@@ -47,8 +47,7 @@ defmodule StreamingDelta.MixProject do
       name: "streaming_delta",
       maintainers: ["Michael Bearne"],
       links: %{"GitHub" => @source_url},
-      licenses: ["SEE LICENSE IN LICENSE"],
-      organization: "dualo"
+      licenses: ["MIT"]
     ]
   end
 

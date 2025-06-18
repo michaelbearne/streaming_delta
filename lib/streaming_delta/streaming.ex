@@ -32,6 +32,7 @@ defmodule StreamingDelta.Streaming do
             extraction_delimiter: "@",
             extraction_keys: []
 
+  @spec diffs(t(), t()) :: [DeltaDiff.t() | ExtractionDiff.t()]
   def diffs(
         %__MODULE__{
           delta: delta,
