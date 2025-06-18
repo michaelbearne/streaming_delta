@@ -3,11 +3,12 @@ defmodule StreamingDelta.Parser do
   alias StreamingDelta.Streaming.{Extraction, Source}
 
   @digits ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
-  defguard is_digit(codepoint) when codepoint in @digits
+  defguardp is_digit(codepoint) when codepoint in @digits
 
-  defguard ref_start(codepoint) when codepoint in ["[", "("]
-  defguard ref_end(codepoint) when codepoint in ["]", ")"]
+  defguardp ref_start(codepoint) when codepoint in ["[", "("]
+  defguardp ref_end(codepoint) when codepoint in ["]", ")"]
 
+  @spec parse_chunks([String.t()], Streaming.t(), [Source.t()]) :: Streaming.t()
   def parse_chunks(chunks, resp \\ %Streaming{}, sources \\ [])
 
   def parse_chunks([chunk | rest] = _chunks, %Streaming{} = resp, sources) do
@@ -19,6 +20,7 @@ defmodule StreamingDelta.Parser do
     resp
   end
 
+  @spec parse_chunk(String.t(), Streaming.t(), [Source.t()]) :: Streaming.t()
   def parse_chunk(chunk, resp \\ %Streaming{}, sources \\ [])
 
   def parse_chunk(chunk, %Streaming{buffer: buffer} = resp, sources) when is_binary(chunk) do
@@ -1257,13 +1259,13 @@ defmodule StreamingDelta.Parser do
     {buffer, resp}
   end
 
-  def parse_heading(
-        buffer,
-        codepoint,
-        rest,
-        %Streaming{active_extraction: active_ext} = resp,
-        sources
-      ) do
+  defp parse_heading(
+         buffer,
+         codepoint,
+         rest,
+         %Streaming{active_extraction: active_ext} = resp,
+         sources
+       ) do
     ext = active_ext && Map.get(resp.extractions, active_ext)
     delta_resp = Map.get(ext || %{}, :delta, resp.delta)
 
@@ -1347,18 +1349,18 @@ defmodule StreamingDelta.Parser do
     )
   end
 
-  def parse_emphasis(
-        [["*", "*", "*"]],
-        "\n",
-        rest,
-        %Streaming{
-          active_extraction: active_ext,
-          streaming_bold: true,
-          streaming_italic: true
-        } =
-          resp,
-        sources
-      ) do
+  defp parse_emphasis(
+         [["*", "*", "*"]],
+         "\n",
+         rest,
+         %Streaming{
+           active_extraction: active_ext,
+           streaming_bold: true,
+           streaming_italic: true
+         } =
+           resp,
+         sources
+       ) do
     ext = active_ext && Map.get(resp.extractions, active_ext)
 
     parse(
@@ -1375,26 +1377,26 @@ defmodule StreamingDelta.Parser do
   end
 
   # not a emphasis due to white space after *
-  def parse_emphasis(
-        [["*", "*", "*"]],
-        " ",
-        rest,
-        %Streaming{active_extraction: active_ext, streaming_bold: false, streaming_italic: false} =
-          resp,
-        sources
-      ) do
+  defp parse_emphasis(
+         [["*", "*", "*"]],
+         " ",
+         rest,
+         %Streaming{active_extraction: active_ext, streaming_bold: false, streaming_italic: false} =
+           resp,
+         sources
+       ) do
     ext = active_ext && Map.get(resp.extractions, active_ext)
     parse([], rest, update(resp, ext, {:concat, "*** "}), sources)
   end
 
-  def parse_emphasis(
-        [["*", "*", "*"]],
-        codepoint,
-        rest,
-        %Streaming{active_extraction: active_ext, streaming_bold: false, streaming_italic: false} =
-          resp,
-        sources
-      ) do
+  defp parse_emphasis(
+         [["*", "*", "*"]],
+         codepoint,
+         rest,
+         %Streaming{active_extraction: active_ext, streaming_bold: false, streaming_italic: false} =
+           resp,
+         sources
+       ) do
     ext = active_ext && Map.get(resp.extractions, active_ext)
 
     parse(
@@ -1411,14 +1413,14 @@ defmodule StreamingDelta.Parser do
   end
 
   # when a colon stright after the bold,italic close also make colon bold
-  def parse_emphasis(
-        [["*", "*", "*"]],
-        ":",
-        rest,
-        %Streaming{active_extraction: active_ext, streaming_bold: true, streaming_italic: true} =
-          resp,
-        sources
-      ) do
+  defp parse_emphasis(
+         [["*", "*", "*"]],
+         ":",
+         rest,
+         %Streaming{active_extraction: active_ext, streaming_bold: true, streaming_italic: true} =
+           resp,
+         sources
+       ) do
     ext = active_ext && Map.get(resp.extractions, active_ext)
 
     parse(
@@ -1438,14 +1440,14 @@ defmodule StreamingDelta.Parser do
     )
   end
 
-  def parse_emphasis(
-        [["*", "*", "*"]],
-        codepoint,
-        rest,
-        %Streaming{active_extraction: active_ext, streaming_bold: true, streaming_italic: true} =
-          resp,
-        sources
-      ) do
+  defp parse_emphasis(
+         [["*", "*", "*"]],
+         codepoint,
+         rest,
+         %Streaming{active_extraction: active_ext, streaming_bold: true, streaming_italic: true} =
+           resp,
+         sources
+       ) do
     ext = active_ext && Map.get(resp.extractions, active_ext)
 
     parse(
@@ -1462,26 +1464,26 @@ defmodule StreamingDelta.Parser do
   end
 
   # not a bold due to white space after *
-  def parse_emphasis(
-        [["*", "*"]],
-        " ",
-        rest,
-        %Streaming{active_extraction: active_ext, streaming_bold: false} =
-          resp,
-        sources
-      ) do
+  defp parse_emphasis(
+         [["*", "*"]],
+         " ",
+         rest,
+         %Streaming{active_extraction: active_ext, streaming_bold: false} =
+           resp,
+         sources
+       ) do
     ext = active_ext && Map.get(resp.extractions, active_ext)
     parse([], rest, update(resp, ext, {:concat, "** "}), sources)
   end
 
-  def parse_emphasis(
-        [["*", "*"]],
-        codepoint,
-        rest,
-        %Streaming{active_extraction: active_ext, streaming_bold: false} =
-          resp,
-        sources
-      ) do
+  defp parse_emphasis(
+         [["*", "*"]],
+         codepoint,
+         rest,
+         %Streaming{active_extraction: active_ext, streaming_bold: false} =
+           resp,
+         sources
+       ) do
     ext = active_ext && Map.get(resp.extractions, active_ext)
 
     parse(
@@ -1498,14 +1500,14 @@ defmodule StreamingDelta.Parser do
   end
 
   # remove the new line
-  def parse_emphasis(
-        [["*", "*"]],
-        "\n",
-        rest,
-        %Streaming{active_extraction: active_ext, streaming_bold: true} =
-          resp,
-        sources
-      ) do
+  defp parse_emphasis(
+         [["*", "*"]],
+         "\n",
+         rest,
+         %Streaming{active_extraction: active_ext, streaming_bold: true} =
+           resp,
+         sources
+       ) do
     ext = active_ext && Map.get(resp.extractions, active_ext)
 
     parse(
@@ -1522,14 +1524,14 @@ defmodule StreamingDelta.Parser do
   end
 
   # when a colon stright after the bold close also make bold
-  def parse_emphasis(
-        [["*", "*"]],
-        ":",
-        rest,
-        %Streaming{active_extraction: active_ext, streaming_bold: true} =
-          resp,
-        sources
-      ) do
+  defp parse_emphasis(
+         [["*", "*"]],
+         ":",
+         rest,
+         %Streaming{active_extraction: active_ext, streaming_bold: true} =
+           resp,
+         sources
+       ) do
     ext = active_ext && Map.get(resp.extractions, active_ext)
 
     parse(
@@ -1548,14 +1550,14 @@ defmodule StreamingDelta.Parser do
     )
   end
 
-  def parse_emphasis(
-        [["*", "*"]],
-        codepoint,
-        rest,
-        %Streaming{active_extraction: active_ext, streaming_bold: true} =
-          resp,
-        sources
-      ) do
+  defp parse_emphasis(
+         [["*", "*"]],
+         codepoint,
+         rest,
+         %Streaming{active_extraction: active_ext, streaming_bold: true} =
+           resp,
+         sources
+       ) do
     ext = active_ext && Map.get(resp.extractions, active_ext)
 
     parse(
@@ -1572,26 +1574,26 @@ defmodule StreamingDelta.Parser do
   end
 
   # not italic due to white space
-  def parse_emphasis(
-        [["*"]],
-        " ",
-        rest,
-        %Streaming{active_extraction: active_ext, streaming_italic: false} =
-          resp,
-        sources
-      ) do
+  defp parse_emphasis(
+         [["*"]],
+         " ",
+         rest,
+         %Streaming{active_extraction: active_ext, streaming_italic: false} =
+           resp,
+         sources
+       ) do
     ext = active_ext && Map.get(resp.extractions, active_ext)
     parse([], rest, update(resp, ext, {:concat, "* "}), sources)
   end
 
-  def parse_emphasis(
-        [["*"]],
-        codepoint,
-        rest,
-        %Streaming{active_extraction: active_ext, streaming_italic: false} =
-          resp,
-        sources
-      ) do
+  defp parse_emphasis(
+         [["*"]],
+         codepoint,
+         rest,
+         %Streaming{active_extraction: active_ext, streaming_italic: false} =
+           resp,
+         sources
+       ) do
     ext = active_ext && Map.get(resp.extractions, active_ext)
 
     parse(
@@ -1608,14 +1610,14 @@ defmodule StreamingDelta.Parser do
   end
 
   # remove new line
-  def parse_emphasis(
-        [["*"]],
-        "\n",
-        rest,
-        %Streaming{active_extraction: active_ext, streaming_italic: true} =
-          resp,
-        sources
-      ) do
+  defp parse_emphasis(
+         [["*"]],
+         "\n",
+         rest,
+         %Streaming{active_extraction: active_ext, streaming_italic: true} =
+           resp,
+         sources
+       ) do
     ext = active_ext && Map.get(resp.extractions, active_ext)
 
     parse(
@@ -1631,14 +1633,14 @@ defmodule StreamingDelta.Parser do
     )
   end
 
-  def parse_emphasis(
-        [["*"]],
-        codepoint,
-        rest,
-        %Streaming{active_extraction: active_ext, streaming_italic: true} =
-          resp,
-        sources
-      ) do
+  defp parse_emphasis(
+         [["*"]],
+         codepoint,
+         rest,
+         %Streaming{active_extraction: active_ext, streaming_italic: true} =
+           resp,
+         sources
+       ) do
     ext = active_ext && Map.get(resp.extractions, active_ext)
 
     parse(
@@ -1655,13 +1657,13 @@ defmodule StreamingDelta.Parser do
   end
 
   # emphasis fall through more than 3 stars
-  def parse_emphasis(
-        [["*", "*", "*" | _rest]] = b,
-        codepoint,
-        rest,
-        %Streaming{active_extraction: active_ext} = resp,
-        sources
-      ) do
+  defp parse_emphasis(
+         [["*", "*", "*" | _rest]] = b,
+         codepoint,
+         rest,
+         %Streaming{active_extraction: active_ext} = resp,
+         sources
+       ) do
     ext = active_ext && Map.get(resp.extractions, active_ext)
 
     parse(
@@ -1672,13 +1674,13 @@ defmodule StreamingDelta.Parser do
     )
   end
 
-  def parse_unordered_list(
-        buffer,
-        codepoint,
-        rest,
-        %Streaming{active_extraction: active_ext} = resp,
-        sources
-      ) do
+  defp parse_unordered_list(
+         buffer,
+         codepoint,
+         rest,
+         %Streaming{active_extraction: active_ext} = resp,
+         sources
+       ) do
     ext = active_ext && Map.get(resp.extractions, active_ext)
     delta_resp = Map.get(ext || %{}, :delta, resp.delta)
 
@@ -1780,13 +1782,13 @@ defmodule StreamingDelta.Parser do
     )
   end
 
-  def parse_order_list(
-        buffer,
-        codepoint,
-        rest,
-        %Streaming{active_extraction: active_ext} = resp,
-        sources
-      ) do
+  defp parse_order_list(
+         buffer,
+         codepoint,
+         rest,
+         %Streaming{active_extraction: active_ext} = resp,
+         sources
+       ) do
     ext = active_ext && Map.get(resp.extractions, active_ext)
     delta_resp = Map.get(ext || %{}, :delta, resp.delta)
 
