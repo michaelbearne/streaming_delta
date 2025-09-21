@@ -7,9 +7,7 @@ defmodule StreamingDelta.Streaming.DeltaDiff do
           new_follow_up_questions: [String.t()]
         }
 
-  defstruct [
-    :delta,
-    :new_cited_source_ids,
-    :new_follow_up_questions
-  ]
+  defstruct delta: [],
+            new_cited_source_ids: [],
+            new_follow_up_questions: []
 end
