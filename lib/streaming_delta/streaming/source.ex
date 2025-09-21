@@ -24,14 +24,21 @@ defmodule StreamingDelta.Streaming.Source do
     end
 
     # def build(%File{} = file) do
-    #   %__MODULE__{
-    #     name: file.name,
-    #     storage_path: file.storage_path,
-    #     height: file.height,
-    #     width: file.width,
-    #     type: file.type
-    #   }
-    # end
+    def build(%{
+          name: file_name,
+          storage_path: file_storage_path,
+          height: file_height,
+          width: file_width,
+          type: file_type
+        }) do
+      %__MODULE__{
+        name: file_name,
+        storage_path: file_storage_path,
+        height: file_height,
+        width: file_width,
+        type: file_type
+      }
+    end
 
     def build(img) when is_map(img) do
       %__MODULE__{
