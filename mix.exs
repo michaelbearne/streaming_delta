@@ -7,7 +7,7 @@ defmodule StreamingDelta.MixProject do
   def project do
     [
       app: :streaming_delta,
-      version: "0.1.0",
+      version: @version,
       elixir: "~> 1.18",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
