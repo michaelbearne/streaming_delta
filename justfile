@@ -3,6 +3,9 @@
 publish:
   mix hex.publish
 
+docs:
+  mix docs
+
 outdated:
   mix hex.outdated
 
